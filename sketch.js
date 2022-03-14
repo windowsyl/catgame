@@ -57,7 +57,7 @@ class Tile {
   }
   basicDraw(x, y) {
     if (this.darkened) fill(70);
-    else fill(0, 70, 0);
+    else fill(0, 85, 0);
     noStroke();
     hexagon(x, y);
   }
@@ -76,6 +76,10 @@ class Cat {
   }
   draw() {
     fill(0);
+    if (this.location.animationTimer <= 0) {
+      this.stamp(this.location.x, this.location.y);
+      return;
+    }
     let drawx = lerp(
       this.location.initialLoc.x,
       this.location.x,
@@ -99,12 +103,12 @@ class Cat {
   }
   stamp(x, y) {
     x -= 3;
-    y += 1;
+    y += 2;
     fill(0);
-    stroke(0);
+    noStroke();
     circle(x, y, 20);
-    this.ear(x, y-1);
-    this.ear(x+8,y-1)
+    this.ear(x, y - 1);
+    this.ear(x + 8, y - 1);
     noFill();
     strokeWeight(3);
     bezier(x + 18, y - 4, x + 7, y - 6, x + 19, y + 8, x + 5, y + 7);
@@ -195,21 +199,38 @@ let catMoved;
 let catHit;
 let catWins;
 let rocksWin;
-function setup() {
-  createCanvas(800, 500, P2D);
-  s = (sqrt(3) / 2) * r;
+let catGifs;
+let rockGifs;
+function preload() {
   rockPlaced = loadSound('rockPlaced.m4a');
   catHit = loadSound('catHit.m4a');
   catMoved = loadSound('catMoved.m4a');
   catWins = loadSound('catWins.m4a');
   rocksWin = loadSound('rocksWin.m4a');
+  catGifs = [
+    loadImage('cat1.gif'),
+    loadImage('cat2.gif'),
+    loadImage('cat3.gif'),
+  ];
+  rockGifs = [
+    loadImage('rock1.gif'),
+    loadImage('rock2.gif'),
+    loadImage('rock3.gif'),
+  ];
+}
+function setup() {
+  createCanvas(800, 500, P2D);
+  s = (sqrt(3) / 2) * r;
 
   tiles = makeTiles();
   cat = new Cat(tiles[120]);
-  // tiles.sort(() => 0.5 - random());
-  // tiles
-  //   .slice(0, floor(tiles.length * 0.2))
-  //   .forEach((tile) => (tile.darkened = true));
+  tiles.sort(() => 0.5 - random());
+  tiles
+    .slice(0, floor(tiles.length * 0.16))
+    .forEach((tile) => (tile.darkened = true));
+  cat.location.darkened = false;
+  catGifs.forEach((gif) => gif.resize(150, 0));
+  rockGifs.forEach((gif) => gif.resize(250, 0));
 }
 
 function draw() {
@@ -218,13 +239,54 @@ function draw() {
     t.draw();
   });
   cat.draw();
-  if (activePlayer == 2) {
+  if (activePlayer == 0) {
+    textSize(40);
+    fill(0)
+    text("rock's turn", 20, 30);
+  } else if (activePlayer == 1) {
+    textSize(40);
+    fill(0)
+    text("cat's turn", 20, 30);
+  } else {
+    strokeWeight(11);
     textSize(120);
-    fill(212, 175, 55);
-    text('cat wins!!', 150, 300);
-  } else if (activePlayer == 3) {
-    textSize(120);
-    fill(212, 175, 55);
-    text('rocks win!!', 150, 300);
+    if (activePlayer == 2) {
+      if (random(1) > 0.5) stroke(255, 0, 0);
+      else stroke(0, 0, 255);
+      fill(212, 175, 55);
+      text('cat wins!!', 150, 300);
+      image(catGifs[0], 40, 40);
+      image(catGifs[1], 500, 70);
+      image(catGifs[2], 60, 300);
+      // catGifs.forEach((gif) => {
+      //   if (gif.getCurrentFrame() > gif.numFrames()-2) gif.setFrame(0);
+      // });
+    } else {
+      fill(139, 69, 19);
+      text('rocks win!!', 150, 300);
+      image(rockGifs[0], 50, 50);
+      image(rockGifs[1], 500, 40);
+      image(rockGifs[2], 300, 350);
+      // rockGifs.forEach((gif) => {
+      //   if (gif.getCurrentFrame() = gif.numFrames()-2) gif.setFrame(0);
+      // });
+    }
+    fill(0);
+    stroke(200);
+    textSize(50);
+    text('press ENTER to play again', 160, 370);
+  }
+}
+
+function keyPressed() {
+  if (keyCode === ENTER && activePlayer > 1) {
+    activePlayer = 0;
+    tiles = makeTiles();
+    cat = new Cat(tiles[120]);
+    tiles.sort(() => 0.5 - random());
+    tiles
+      .slice(0, floor(tiles.length * 0.16))
+      .forEach((tile) => (tile.darkened = true));
+    cat.location.darkened = false;
   }
 }
