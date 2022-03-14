@@ -144,41 +144,44 @@ function mouseClicked() {
         if (minDist < s) break;
       }
     }
-    if (activePlayer == 0) {
-      if (!nearest.darkened && cat.location != nearest) {
-        nearest.startFalling();
-        rockPlaced.play();
-        activePlayer = 1;
-        catNeighbors = [];
-        tiles.forEach((t) => {
-          let catDist = dist(t.x, t.y, cat.x, cat.y);
-          if (catDist < 60 && catDist > 0) {
-            catNeighbors.push(t);
-          }
-        });
+    switch (activePlayer) {
+      case 0:
+        if (!nearest.darkened && cat.location != nearest) {
+          nearest.startFalling();
+          rockPlaced.play();
+          activePlayer = 1;
+          catNeighbors = [];
+          tiles.forEach((t) => {
+            let catDist = dist(t.x, t.y, cat.x, cat.y);
+            if (catDist < 60 && catDist > 0) {
+              catNeighbors.push(t);
+            }
+          });
 
-        if (catNeighbors.every((t) => t.darkened)) {
-          console.log('rocks win');
-          rocksWin.play();
-          activePlayer = 3;
+          if (catNeighbors.every((t) => t.darkened)) {
+            console.log('rocks win');
+            rocksWin.play();
+            activePlayer = 3;
+          }
         }
-      }
-    } else if (activePlayer == 1) {
-      if (
-        dist(nearest.x, nearest.y, cat.x, cat.y) < r + r + 3 &&
-        !nearest.darkened &&
-        nearest != cat.location
-      ) {
-        cat.location = nearest;
-        if (cat.x < 46 || cat.x > 737 || cat.y < 80 || cat.y > 425) {
-          console.log('cat wins');
-          catWins.play();
-          activePlayer = 2;
-        } else {
-          catMoved.play();
-          activePlayer = 0;
+        break;
+      case 1:
+        if (
+          dist(nearest.x, nearest.y, cat.x, cat.y) < r + r + 3 &&
+          !nearest.darkened &&
+          nearest != cat.location
+        ) {
+          cat.location = nearest;
+          let edges = [cat.x < 46, cat.x > 737, cat.y < 80, cat.y > 425];
+          if (edges.some(b => b)) {
+            console.log('cat wins');
+            catWins.play();
+            activePlayer = 2;
+          } else {
+            catMoved.play();
+            activePlayer = 0;
+          }
         }
-      }
     }
   }
 }
@@ -239,42 +242,41 @@ function draw() {
     t.draw();
   });
   cat.draw();
-  if (activePlayer == 0) {
-    textSize(40);
-    fill(0)
-    text("rock's turn", 20, 30);
-  } else if (activePlayer == 1) {
-    textSize(40);
-    fill(0)
-    text("cat's turn", 20, 30);
-  } else {
-    strokeWeight(11);
-    textSize(120);
-    if (activePlayer == 2) {
-      if (random(1) > 0.5) stroke(255, 0, 0);
-      else stroke(0, 0, 255);
-      fill(212, 175, 55);
-      text('cat wins!!', 150, 300);
-      image(catGifs[0], 40, 40);
-      image(catGifs[1], 500, 70);
-      image(catGifs[2], 60, 300);
-      // catGifs.forEach((gif) => {
-      //   if (gif.getCurrentFrame() > gif.numFrames()-2) gif.setFrame(0);
-      // });
-    } else {
-      fill(139, 69, 19);
-      text('rocks win!!', 150, 300);
-      image(rockGifs[0], 50, 50);
-      image(rockGifs[1], 500, 40);
-      image(rockGifs[2], 300, 350);
-      // rockGifs.forEach((gif) => {
-      //   if (gif.getCurrentFrame() = gif.numFrames()-2) gif.setFrame(0);
-      // });
-    }
-    fill(0);
-    stroke(200);
-    textSize(50);
-    text('press ENTER to play again', 160, 370);
+  switch (activePlayer) {
+    case 0:
+      textSize(40);
+      fill(0);
+      text("rock's turn", 20, 30);
+      break;
+    case 1:
+      textSize(40);
+      fill(0);
+      textSize(40);
+      fill(0);
+      text("cat's turn", 20, 30);
+      break;
+    default:
+      strokeWeight(11);
+      textSize(120);
+      if (activePlayer == 2) {
+        if (random(1) > 0.5) stroke(255, 0, 0);
+        else stroke(0, 0, 255);
+        fill(212, 175, 55);
+        text('cat wins!!', 150, 300);
+        image(catGifs[0], 40, 40);
+        image(catGifs[1], 500, 70);
+        image(catGifs[2], 60, 300);
+      } else { //activePlayer == 3
+        fill(139, 69, 19);
+        text('rocks win!!', 150, 300);
+        image(rockGifs[0], 50, 50);
+        image(rockGifs[1], 500, 40);
+        image(rockGifs[2], 300, 350);
+      }
+      fill(0);
+      stroke(200);
+      textSize(50);
+      text('press ENTER to play again', 160, 370);
   }
 }
 
